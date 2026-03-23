@@ -174,3 +174,5 @@ If that does not load, fix network/VPN first.
 JitPack runs Gradle with `-Pgroup=com.github.jalagama`. If the library used a Gradle property named `GROUP`, that value was **overridden**, so the published **`.module`** (Gradle Module Metadata) could declare the wrong component id while the **POM** looked correct — Gradle then fails resolution.
 
 This repo uses **`ALERTKIT_MAVEN_GROUP`** (not `GROUP`) so metadata matches `com.github.jalagama.AlertKit:popup-ui`. After pulling that fix, **tag a new release** (e.g. `1.0.1`), wait for a green [JitPack](https://jitpack.io/#jalagama/AlertKit) build, then depend on that tag.
+
+[![](https://jitpack.io/v/jalagama/AlertKit.svg)](https://jitpack.io/#jalagama/AlertKit)
