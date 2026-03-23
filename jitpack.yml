@@ -1,0 +1,3 @@
+# https://docs.jitpack.io/android/
+jdk:
+  - openjdk17
