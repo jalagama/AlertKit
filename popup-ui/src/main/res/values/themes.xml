@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="ThemeOverlay.PopupUi.MaterialAlert" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="android:windowMinWidthMajor">@android:dimen/dialog_min_width_major</item>
+        <item name="android:windowMinWidthMinor">@android:dimen/dialog_min_width_minor</item>
+    </style>
+
+    <style name="ThemeOverlay.PopupUi.BottomSheet" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.PopupUi.BottomSheet.Modal</item>
+    </style>
+
+    <style name="Widget.PopupUi.BottomSheet.Modal" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="shapeAppearance">@style/ShapeAppearance.PopupUi.LargeComponent</item>
+    </style>
+
+    <style name="ShapeAppearance.PopupUi.LargeComponent" parent="ShapeAppearance.Material3.LargeComponent" />
+</resources>

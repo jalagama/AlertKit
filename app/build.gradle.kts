@@ -36,6 +36,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":popup-ui"))
+    implementation(project(":popup-compose"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

@@ -29,6 +29,9 @@ class PopupManager private constructor(
     /** Next request to show without dequeuing (critical preemption or replace-current). */
     private var pendingShow: PopupRequest? = null
 
+    private var programmaticDismissReason: PopupAnalyticsListener.DismissReason =
+        PopupAnalyticsListener.DismissReason.PROGRAMMATIC
+
     private val displayListener = object : PopupDisplayListener {
         override fun onButtonClicked(buttonId: String) {
             val req = synchronized(lock) { currentRequest }
@@ -45,7 +48,7 @@ class PopupManager private constructor(
         }
 
         override fun onDismissed(userInitiated: Boolean) {
-            handleDismiss(userInitiated)
+            mainThreadExecutor.execute { handleDismiss(userInitiated) }
         }
     }
 
@@ -94,6 +97,7 @@ class PopupManager private constructor(
                 PopupDeduplicationMode.IGNORE_DUPLICATE -> return EnqueueResult.DuplicateIgnored
                 PopupDeduplicationMode.REPLACE -> {
                     pendingShow = request
+                    programmaticDismissReason = PopupAnalyticsListener.DismissReason.REPLACED
                     after.dismissCurrent = true
                     return EnqueueResult.ReplacedCurrent
                 }
@@ -102,6 +106,7 @@ class PopupManager private constructor(
         if (cur != null && request.preemptsOver(cur)) {
             pendingShow = request
             preemptedStack.addLast(cur)
+            programmaticDismissReason = PopupAnalyticsListener.DismissReason.INTERRUPTED
             after.dismissCurrent = true
             return EnqueueResult.Accepted
         }
@@ -113,52 +118,61 @@ class PopupManager private constructor(
             val req = currentRequest
             currentRequest = null
             val reason = when {
-                pendingShow != null && req != null -> PopupAnalyticsListener.DismissReason.REPLACED
                 userInitiated -> PopupAnalyticsListener.DismissReason.USER_ACTION
-                else -> PopupAnalyticsListener.DismissReason.PROGRAMMATIC
+                else -> programmaticDismissReason
             }
+            programmaticDismissReason = PopupAnalyticsListener.DismissReason.PROGRAMMATIC
             Pair(req, reason)
         }
         if (dismissed != null) {
             analyticsListener?.onDismissed(dismissed, reason)
         }
-        tryShowNext()
+        mainThreadExecutor.execute { tryShowNext() }
     }
 
     private fun tryShowNext() {
         val snapshot = synchronized(lock) {
             if (currentRequest != null) {
-                return
+                return@synchronized null
             }
             if (!foregroundStateProvider.isAppInForeground()) {
-                return
+                return@synchronized null
             }
             val activity = activityProvider.currentActivity()
             val bridge = displayBridge
             if (activity == null || bridge == null) {
-                return
+                return@synchronized null
             }
             val next = pendingShow
-                ?: preemptedStack.removeLastOrNull()
+                ?: preemptedStack.pollLast()
                 ?: queueStore.poll()
-                ?: return
+                ?: return@synchronized null
             pendingShow = null
-            currentRequest = next
             Triple(activity, bridge, next)
-        }
+        } ?: return
+
         val (activity, bridge, next) = snapshot
-        feedbackController.onPopupShown(next)
-        analyticsListener?.onShown(next)
-        val shown = bridge.show(activity, next, displayListener)
-        if (!shown) {
-            synchronized(lock) {
-                if (currentRequest === next) {
-                    currentRequest = null
+        try {
+            val shown = bridge.show(activity, next, displayListener)
+            if (shown) {
+                synchronized(lock) {
+                    currentRequest = next
                 }
+                feedbackController.onPopupShown(next)
+                analyticsListener?.onShown(next)
+            } else {
+                synchronized(lock) {
+                    preemptedStack.addLast(next)
+                }
+                logger.w(TAG, "PopupDisplayBridge.show returned false; re-queued id=${next.id}")
+                mainThreadExecutor.execute { tryShowNext() }
+            }
+        } catch (e: Exception) {
+            synchronized(lock) {
                 preemptedStack.addLast(next)
             }
-            logger.w(TAG, "PopupDisplayBridge.show returned false; re-queued id=${next.id}")
-            tryShowNext()
+            logger.w(TAG, "PopupDisplayBridge.show threw; re-queued id=${next.id} — ${e.message}")
+            mainThreadExecutor.execute { tryShowNext() }
         }
     }
 
@@ -183,7 +197,7 @@ class PopupManager private constructor(
         fun displayBridge(bridge: PopupDisplayBridge?) = apply { this.bridge = bridge }
 
         fun build(): PopupManager {
-            val exec = mainThreadExecutor ?: error("mainThreadExecutor is required")
+            val exec = mainThread ?: error("Call mainThreadExecutor(...) before build()")
             return PopupManager(
                 activityProvider = activityProvider,
                 foregroundStateProvider = foregroundStateProvider,

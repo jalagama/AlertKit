@@ -7,7 +7,10 @@ import java.util.PriorityQueue
 import java.util.concurrent.atomic.AtomicLong
 
 /**
- * Thread-safe priority FIFO-per-tier queue with optional replace-by-id.
+ * Priority queue (equivalent to [java.util.concurrent.PriorityBlockingQueue] for our use case:
+ * [PopupManager] serializes access with a single lock, so a plain [PriorityQueue] avoids extra
+ * blocking overhead) with FIFO ordering within the same [com.jalagama.popup.core.PopupPriority].
+ *
  * All methods must be called under [com.jalagama.popup.core.PopupManager]'s coordinator lock.
  */
 internal class PopupQueueStore {

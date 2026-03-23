@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/btnLow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enqueue LOW" />
+
+        <Button
+            android:id="@+id/btnHigh"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enqueue HIGH (sound/vibrate)" />
+
+        <Button
+            android:id="@+id/btnList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="List body (dedup REPLACE id)" />
+
+        <Button
+            android:id="@+id/btnSheet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Bottom sheet (Material)" />
+
+        <Button
+            android:id="@+id/btnCritical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enqueue CRITICAL (preempt)" />
+
+        <Button
+            android:id="@+id/btnUseCompose"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Switch UI to Compose bridge" />
+
+        <Button
+            android:id="@+id/btnUseMaterial"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Switch UI to Material bridge" />
+    </LinearLayout>
+</ScrollView>
