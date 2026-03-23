@@ -1,8 +1,13 @@
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 
-val publishGroup = rootProject.findProperty("GROUP") as String? ?: "com.github.jalagama"
-val publishVersion = rootProject.findProperty("VERSION_NAME") as String? ?: "0.1.0-SNAPSHOT"
+// Never read "GROUP": JitPack injects -Pgroup=com.github.jalagama and would corrupt .module identity.
+val publishGroup =
+    rootProject.findProperty("ALERTKIT_MAVEN_GROUP") as String? ?: "com.github.jalagama.AlertKit"
+// Prefer JitPack's -Pversion=<git-tag> over VERSION_NAME from gradle.properties.
+val publishVersion =
+    (rootProject.findProperty("version") ?: rootProject.findProperty("VERSION_NAME")) as String?
+        ?: "0.1.0-SNAPSHOT"
 
 group = publishGroup
 version = publishVersion

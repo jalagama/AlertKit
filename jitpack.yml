@@ -1,3 +1,5 @@
 # https://docs.jitpack.io/android/
+# JitPack adds -Pgroup=com.github.<user> — do not use a Gradle property named "GROUP" for publish IDs;
+# see ALERTKIT_MAVEN_GROUP in gradle.properties and alertkit-publish.gradle.kts.
 jdk:
   - openjdk17
