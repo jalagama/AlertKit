@@ -62,3 +62,6 @@ Published Maven coordinates are **`com.github.jalagama`** + artifact id **`popup
 ```
 
 Then depend on `com.github.jalagama:popup-ui:0.1.0` from `mavenLocal()`.
+
+[![](https://jitpack.io/v/jalagama/AlertKit.svg)](https://jitpack.io/#jalagama/AlertKit)
+
